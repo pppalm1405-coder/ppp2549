@@ -1,0 +1,136 @@
+// นำเข้าฟังก์ชันที่จำเป็นจาก Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    updateDoc, 
+    arrayUnion, 
+    onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// ตั้งค่า Firebase ของคุณ
+const firebaseConfig = {
+    apiKey: "AIzaSyAdZX2-DwIZiVcWTQ8oQmHG7vPLDdbD-Ec",
+    authDomain: "artiwara-e93e5.firebaseapp.com",
+    projectId: "artiwara-e93e5",
+    storageBucket: "artiwara-e93e5.firebasestorage.app",
+    messagingSenderId: "960432283419",
+    appId: "1:960432283419:web:33381a669fbc7c1135bdbe",
+    measurementId: "G-FECJG131F4"
+};
+
+// เริ่มต้นใช้งาน Firebase และ Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// กำหนดเป้าหมายแคลอรี่
+const GOAL_CALORIES = 2000;
+// ใช้ Document ID จำลองสำหรับ MVP (ในแอปจริงจะใช้ User ID + วันที่)
+const recordDocRef = doc(db, "daily_records", "user_somorn_today");
+
+// ดึง Elements จาก HTML
+const totalKcalEl = document.getElementById("total-kcal");
+const statusMsgEl = document.getElementById("status-message");
+const foodListEl = document.getElementById("food-list");
+const foodNameInput = document.getElementById("food-name");
+const foodCalInput = document.getElementById("food-cal");
+const addBtn = document.getElementById("add-btn");
+
+// ฟังก์ชันสำหรับเตรียม Document ให้พร้อม (ถ้ายังไม่มีให้สร้างใหม่)
+async function initializeDoc() {
+    try {
+        await setDoc(recordDocRef, { total_calories: 0, food_items: [] }, { merge: true });
+    } catch (e) {
+        console.error("Error initializing doc: ", e);
+        alert("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ โปรดตรวจสอบ Firestore Rules");
+    }
+}
+
+// 1. ฟังก์ชันอัปเดตสถานะ "การตอบสนอง" (ฟีเจอร์หลักที่ 2)
+function updateStatusUI(total) {
+    let percentage = (total / GOAL_CALORIES) * 100;
+    
+    if (percentage < 60) {
+        statusMsgEl.textContent = "ดีเยี่ยม 🌟";
+        statusMsgEl.style.color = "var(--primary-green)";
+    } else if (percentage < 100) {
+        statusMsgEl.textContent = "เบาได้เบานะ ⚠️";
+        statusMsgEl.style.color = "#f39c12"; // สีส้ม
+    } else {
+        statusMsgEl.textContent = "พอก่อนมั้ย 🛑";
+        statusMsgEl.style.color = "#e74c3c"; // สีแดง
+    }
+}
+
+// 2. ฟังก์ชันเพิ่มรายการอาหารลง Firebase
+addBtn.addEventListener("click", async () => {
+    const name = foodNameInput.value.trim();
+    const calories = parseInt(foodCalInput.value);
+
+    if (name === "" || isNaN(calories) || calories <= 0) {
+        alert("กรุณากรอกชื่ออาหารและแคลอรี่ให้ถูกต้อง");
+        return;
+    }
+
+    const newItem = {
+        name: name,
+        calories: calories,
+        timestamp: new Date().toISOString()
+    };
+
+    // ส่งข้อมูลอัปเดตไปที่ Firebase
+    addBtn.textContent = "กำลังเพิ่ม...";
+    addBtn.disabled = true;
+
+    try {
+        // ใช้ arrayUnion เพื่อดันข้อมูลใหม่เข้า array และเพิ่ม total_calories
+        await updateDoc(recordDocRef, {
+            food_items: arrayUnion(newItem),
+            total_calories: /* ใช้สูตรบวกเพิ่มแบบเรียลไทม์ไม่ได้โดยตรงถ้าไม่มีค่าเดิม จึงใช้ Cloud logic หรือดึงมาบวก แต่เพื่อความง่ายเราจะดึงค่าปัจจุบันมาบวก */ 
+            Number(totalKcalEl.textContent) + calories
+        });
+
+        // ล้างช่องป้อนข้อมูล
+        foodNameInput.value = "";
+        foodCalInput.value = "";
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    } finally {
+        addBtn.textContent = "+ เพิ่มรายการ";
+        addBtn.disabled = false;
+    }
+});
+
+// 3. ฟังก์ชันดึงข้อมูลมาแสดงแบบ Real-time (ฟีเจอร์หลักที่ 1)
+function listenToData() {
+    // onSnapshot จะทำงานทันทีที่มีการเปลี่ยนแปลงใน Database
+    onSnapshot(recordDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // อัปเดตตัวเลขแคลอรี่รวม
+            totalKcalEl.textContent = data.total_calories;
+            
+            // อัปเดตข้อความสถานะ
+            updateStatusUI(data.total_calories);
+
+            // อัปเดตรายการอาหาร
+            foodListEl.innerHTML = "";
+            if (data.food_items && data.food_items.length > 0) {
+                // เรียงจากใหม่ไปเก่า (reverse)
+                const items = [...data.food_items].reverse();
+                items.forEach((item, index) => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `<span>${item.name}</span> <span>${item.calories} kcal</span>`;
+                    foodListEl.appendChild(li);
+                });
+            }
+        }
+    });
+}
+
+// เริ่มการทำงาน
+initializeDoc().then(() => {
+    listenToData();
+});
