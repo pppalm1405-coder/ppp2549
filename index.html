@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaining Health - Calorie Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="profile-section">
+                <div class="profile-pic"></div>
+                <span class="user-name">สมร</span>
+            </div>
+            <button class="weight-btn">น้ำหนัก</button>
+        </header>
+
+        <section class="summary-card">
+            <h2>แคลอรี่วันนี้</h2>
+            <div class="calorie-display">
+                <span id="total-kcal" class="total-kcal">0</span>
+                <span class="unit">/ 2000 kcal</span>
+            </div>
+            <div id="status-message" class="status-message">กำลังโหลด...</div>
+        </section>
+
+        <section class="add-food-section">
+            <input type="text" id="food-name" placeholder="ชื่ออาหาร (เช่น ข้าวกะเพรา)">
+            <input type="number" id="food-cal" placeholder="กิโลแคลอรี่ (เช่น 450)">
+            <button id="add-btn" class="add-btn">+ เพิ่มรายการ</button>
+        </section>
+
+        <section class="food-list-section">
+            <h3>รายการที่กินไป</h3>
+            <ul id="food-list">
+                </ul>
+        </section>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
