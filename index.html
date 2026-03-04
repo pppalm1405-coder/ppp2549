@@ -3,36 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remaining Health - Calorie Tracker</title>
+    <title>Remaining Health</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div class="profile-section">
-                <div class="profile-pic"></div>
-                <span class="user-name">สมร</span>
+            <div class="profile-wrapper">
+                <img src="https://ui-avatars.com/api/?name=สมร&background=5E35B1&color=fff&size=100" alt="Profile" class="profile-pic">
+                <div class="profile-info">
+                    <h1 class="user-name">คุณ สมร</h1>
+                    <span class="user-age">อายุ 25 ปี</span>
+                </div>
             </div>
-            <button class="weight-btn">น้ำหนัก</button>
+            <div class="header-actions">
+                <button class="icon-btn" title="แก้ไขโปรไฟล์"><i class='bx bx-edit-alt'></i></button>
+                <button class="weight-btn"><i class='bx bx-line-chart'></i> น้ำหนัก</button>
+            </div>
         </header>
 
         <section class="summary-card">
-            <h2>แคลอรี่วันนี้</h2>
-            <div class="calorie-display">
+            <h2 class="card-title">พลังงานวันนี้</h2>
+            <div class="calorie-circle">
                 <span id="total-kcal" class="total-kcal">0</span>
                 <span class="unit">/ 2000 kcal</span>
             </div>
-            <div id="status-message" class="status-message">กำลังโหลด...</div>
+            <div id="status-message" class="status-message">กำลังโหลดข้อมูล...</div>
         </section>
 
         <section class="add-food-section">
-            <input type="text" id="food-name" placeholder="ชื่ออาหาร (เช่น ข้าวกะเพรา)">
-            <input type="number" id="food-cal" placeholder="กิโลแคลอรี่ (เช่น 450)">
-            <button id="add-btn" class="add-btn">+ เพิ่มรายการ</button>
+            <div class="input-group">
+                <i class='bx bx-bowl-hot'></i>
+                <input type="text" id="food-name" placeholder="กินอะไรไปเอ่ย? (เช่น ข้าวกะเพรา)">
+            </div>
+            <div class="input-group">
+                <i class='bx bxs-flame'></i>
+                <input type="number" id="food-cal" placeholder="กี่แคลอรี่? (เช่น 450)">
+            </div>
+            <button id="add-btn" class="add-btn">
+                <i class='bx bx-plus-circle'></i> บันทึกรายการ
+            </button>
         </section>
 
         <section class="food-list-section">
-            <h3>รายการที่กินไป</h3>
+            <div class="list-header">
+                <h3>รายการที่กินไป</h3>
+                <span class="list-count">วันนี้</span>
+            </div>
             <ul id="food-list">
                 </ul>
         </section>
